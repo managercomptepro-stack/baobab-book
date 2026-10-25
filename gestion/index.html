@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Gestion — Baobab Book</title>
+<meta name="theme-color" content="#0A0907">
+<link rel="icon" type="image/png" href="../assets/img/icon-32.png">
+<link rel="apple-touch-icon" href="../assets/img/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/admin.css">
+</head>
+<body>
+
+<!-- Connexion -->
+<main class="login" id="login" hidden>
+  <img src="../assets/img/logo.webp" alt="Baobab Book" width="720" height="518" class="login-logo">
+  <h1>Espace de gestion</h1>
+  <form id="loginForm" class="card" novalidate>
+    <label for="key">Clé d’accès GitHub</label>
+    <input id="key" type="password" autocomplete="off" placeholder="github_pat_…" required>
+    <label class="check"><input type="checkbox" id="keep" checked> Rester connecté sur cet appareil</label>
+    <button class="btn btn-gold" type="submit">Se connecter</button>
+    <p class="err" id="loginErr" role="alert"></p>
+    <details class="help"><summary>Comment obtenir la clé ?</summary>
+      <ol>
+        <li>Sur GitHub : <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</b>.</li>
+        <li>Repository access : <b>Only select repositories</b> → <b>baobab-book</b>.</li>
+        <li>Permissions → Repository → <b>Contents : Read and write</b>.</li>
+        <li>Copie la clé et colle-la ici.</li>
+      </ol>
+    </details>
+  </form>
+</main>
+
+<!-- Application -->
+<div class="app" id="app" hidden>
+  <header class="top">
+    <img src="../assets/img/emblem.webp" alt="" width="240" height="185" class="top-em">
+    <b>Gestion</b>
+    <span class="sync" id="sync"></span>
+    <a href="../" target="_blank" rel="noopener" class="lnk">Voir le site</a>
+    <button class="lnk" id="logout" type="button">Déconnexion</button>
+  </header>
+  <nav class="tabs" id="tabs">
+    <button data-tab="books" class="on">Livres</button>
+    <button data-tab="packs">Packs</button>
+    <button data-tab="reviews">Avis</button>
+    <button data-tab="settings">Réglages</button>
+  </nav>
+  <section class="pane" id="pane"></section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="modal"></div>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/store.js"></script>
+<script src="../assets/js/admin.js"></script>
+</body>
+</html>
