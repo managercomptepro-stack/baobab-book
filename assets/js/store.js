@@ -168,7 +168,7 @@
         var j = null; try { j = t ? JSON.parse(t) : null; } catch(e){}
         if (!r.ok){
           var msg = r.status === 401 ? 'Clé d’accès invalide ou expirée.'
-            : (r.status === 403 || r.status === 404) ? 'Cette clé n’a pas le droit de modifier le dépôt ' + REPO + '.'
+            : (r.status === 403 || r.status === 404) ? 'Cette clé n’a pas le droit de modifier le dépôt ' + REPO + (j && j.message ? ' (' + j.message + ')' : '') + '.'
             : (j && j.message) || ('Erreur GitHub ' + r.status);
           var e = new Error(msg); e.status = r.status; throw e;
         }
@@ -244,8 +244,25 @@
       secret = String(secret || '').trim();
       if (!GH) return Promise.reject(new Error('GITHUB_REPO n’est pas réglé dans assets/js/config.js.'));
       if (secret.length < 20) return Promise.reject(new Error('Colle la clé GitHub complète (elle commence par github_pat_ ou ghp_).'));
-      return gh('GET', '', null, secret).then(function(r){
-        if (!r || !r.permissions || !r.permissions.push) throw new Error('Cette clé peut lire le dépôt mais pas le modifier : coche « Contents : Read and write ».');
+      /* Test d'écriture sans rien modifier : on envoie une mise à jour avec une
+         empreinte (sha) volontairement fausse. Si la clé a le droit d'écrire,
+         GitHub répond 409/422 (conflit) ; sinon 403/404. Le fichier n'est jamais touché. */
+      function probe(){
+        var headers = {'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + secret, 'Content-Type': 'application/json'};
+        return timed('https://api.github.com/repos/' + REPO + '/contents/catalogue.json', {
+          method: 'PUT', headers: headers, cache: 'no-store',
+          body: JSON.stringify({message: 'test', content: b64enc('test'), sha: '0000000000000000000000000000000000000000', branch: BRANCH})
+        }, 30000).then(function(r){
+          if (r.status === 409 || r.status === 422 || r.ok) return true;
+          return r.text().then(function(t){
+            var m = ''; try { m = JSON.parse(t).message || ''; } catch(e){}
+            var e = new Error(r.status === 401 ? 'Clé d’accès invalide ou expirée.'
+              : 'GitHub refuse l’écriture (' + r.status + (m ? ' : ' + m : '') + '). Dans la clé : « Repository access » = « Only select repositories » → ' + REPO + ', puis « Repository permissions » → « Contents » = « Read and write ».');
+            e.status = r.status; throw e;
+          });
+        });
+      }
+      return gh('GET', '', null, secret).then(function(){ return probe(); }).then(function(){
         setToken(secret, keep !== false);
         return true;
       });
